@@ -17,6 +17,7 @@ export const UserController = {
     async getAll(_req: Request, res: Response) {
         try {
             const users = await userService.findAll();
+            const safeUsers = users.map(({ password, ...user }) => user);
             res.status(200).json(users);
         } catch (error) {
             res.status(500).json({ message: "Erreur serveur" });

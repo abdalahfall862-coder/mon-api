@@ -5,7 +5,7 @@ export class User {
     @ObjectIdColumn()
     id!: ObjectId;
 
-    @Column({ type: "string" }) // On précise le type explicitement
+    @Column({ type: "string" })
     username!: string;
 
     @Column({ type: "string", unique: true })
