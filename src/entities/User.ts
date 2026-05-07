@@ -5,12 +5,12 @@ export class User {
     @ObjectIdColumn()
     id!: ObjectId;
 
-    @Column()
+    @Column({ type: "string" }) // On précise le type explicitement
     username!: string;
 
-    @Column({ unique: true })
+    @Column({ type: "string", unique: true })
     email!: string;
 
-    @Column()
+    @Column({ type: "string" })
     password!: string;
 }
