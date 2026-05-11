@@ -5,13 +5,12 @@ const userService = new UserService();
 
 export class UserController {
     
-    // Inscription : On enlève le bloc de test et on rétablit la vraie logique
+    // 1. Inscription
     static async register(req: Request, res: Response, next: NextFunction) {
         try {
             const { username, email, password } = req.body;
             const newUser = await userService.register({username, email, password});
             
-            // On ne renvoie pas le password dans la réponse
             const { password: _, ...userResponse } = newUser;
             
             res.status(201).json({
@@ -23,7 +22,7 @@ export class UserController {
         }
     }
 
-    // Connexion
+    // 2. Connexion
     static async login(req: Request, res: Response, next: NextFunction) {
         try {
             const { email, password } = req.body;
@@ -38,12 +37,11 @@ export class UserController {
         }
     }
 
-    // Liste des utilisateurs (Sécurisée)
+    // 3. Liste de tous les utilisateurs
     static async getAll(_req: Request, res: Response, next: NextFunction) {
         try {
             const users = await userService.findAll();
             
-            // PROTECTION : On retire le champ password de chaque utilisateur
             const usersSafe = users.map(user => {
                 const { password, ...userWithoutPassword } = user;
                 return userWithoutPassword;
@@ -52,6 +50,41 @@ export class UserController {
             res.status(200).json(usersSafe);
         } catch (error: any) {
             next(error); 
+        }
+    }
+
+    // 4. Récupérer un utilisateur par ID (Nouveau)
+    static async getOne(req: Request, res: Response, next: NextFunction) {
+        try {
+            const user = await userService.findOne(req.params.id as string);
+            const { password, ...userSafe } = user;
+            res.status(200).json(userSafe);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // 5. Mettre à jour un utilisateur (Nouveau)
+    static async update(req: Request, res: Response, next: NextFunction) {
+        try {
+            const updatedUser = await userService.update(req.params.id as string, req.body);
+            const { password, ...userSafe } = updatedUser;
+            res.status(200).json({
+                message: "Utilisateur mis à jour",
+                user: userSafe
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // 6. Supprimer un utilisateur (Nouveau)
+    static async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            await userService.delete(req.params.id as string);
+            res.status(204).send(); // 204 = Succès sans contenu à renvoyer
+        } catch (error) {
+            next(error);
         }
     }
 }

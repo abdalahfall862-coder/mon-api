@@ -2,6 +2,7 @@ import { AppDataSource } from "../config/data-source.js";
 import { User } from "../entities/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { ObjectId } from "mongodb"; // <--- Indispensable pour MongoDB
 
 export class UserService {
     private userRepository = AppDataSource.getMongoRepository(User);
@@ -28,13 +29,11 @@ export class UserService {
 
     // 2. Connexion (Login)
     async login(email: string, password: string) {
-        console.log("1. Début login pour:", email);
         const user = await this.userRepository.findOneBy({ email });
         
         if (!user) throw new Error("Utilisateur non trouvé");
 
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log("4. Mot de passe correct:", isMatch);
         
         if (!isMatch) throw new Error("Mot de passe incorrect");
 
@@ -50,5 +49,39 @@ export class UserService {
     // 3. Récupérer tous les utilisateurs
     async findAll() {
         return await this.userRepository.find();
+    }
+
+    // --- NOUVELLES MÉTHODES POUR L'ÉTAPE 3 ---
+
+    // 4. Récupérer un utilisateur par son ID
+    async findOne(id: string) {
+        // Pour MongoDB, on utilise l'ObjectId
+        const user = await this.userRepository.findOneBy({ _id: new ObjectId(id) } as any);
+        if (!user) throw new Error("Utilisateur non trouvé");
+        return user;
+    }
+
+    // 5. Mettre à jour un utilisateur
+    async update(id: string, userData: Partial<User>) {
+        const userId = new ObjectId(id);
+
+        // Si l'utilisateur change son mot de passe, on le hash
+        if (userData.password) {
+            const salt = await bcrypt.genSalt(10);
+            userData.password = await bcrypt.hash(userData.password, salt);
+        }
+
+        // On met à jour les champs fournis
+        await this.userRepository.update(userId, userData);
+
+        // On renvoie l'utilisateur mis à jour
+        return await this.findOne(id);
+    }
+
+    // 6. Supprimer un utilisateur
+    async delete(id: string) {
+        const result = await this.userRepository.delete(new ObjectId(id));
+        if (result.affected === 0) throw new Error("Utilisateur non trouvé ou déjà supprimé");
+        return true;
     }
 }
