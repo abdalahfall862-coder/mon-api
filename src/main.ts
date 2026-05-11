@@ -1,15 +1,23 @@
 import "reflect-metadata";
+import dotenv from "dotenv";
+dotenv.config();
+if (!process.env.JWT_SECRET) {
+    console.log("❌ ERREUR : Le fichier .env n'est toujours pas lu !");
+} else {
+    console.log("✅ SUCCESS : La clé secrète est chargée !");
+}
+
 import express from "express";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import { AppDataSource } from "./config/data-source.js";
 import userRoutes from "./routes/UserRoutes.js";
-import { errorMiddleware } from "./middlewares/error.middleware.js"; // Importé ici
-
-dotenv.config();
+import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// Maintenant PORT ne sera pas undefined
+const PORT = process.env.PORT || 3000; 
+
+// ... le reste de ton code reste identique
 
 app.use(express.json()); 
 app.use(morgan("dev")); // LOGS : OK ✅
