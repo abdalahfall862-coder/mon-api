@@ -46,10 +46,19 @@ router.post("/register", validationMiddleware(CreateUserDto), UserController.reg
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               email: { type: string, example: test@example.com }
- *               password: { type: string, example: password123 }
+ *             $ref: '#/components/schemas/LoginDto'
+ *     responses:
+ *       200:
+ *         description: Connexion réussie
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
  */
 router.post("/login", UserController.login);
 
@@ -84,34 +93,16 @@ router.get("/users", authMiddleware, UserController.getAll);
  *         required: true
  *         schema:
  *           type: string
- *         description: L'ID de l'utilisateur (MongoDB ObjectId)
+ *     responses:
+ *       200:
+ *         description: Utilisateur trouvé avec succès
+ *       401:
+ *         description: Non autorisé (Token invalide)
+ *       404:
+ *         description: Utilisateur non trouvé
  */
+// AJOUT ICI : La ligne qui manquait pour lier l'ID au contrôleur
 router.get("/users/:id", authMiddleware, UserController.getOne);
-
-/**
- * @swagger
- * /api/users/{id}:
- *   put:
- *     summary: Modifier un utilisateur
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username: { type: string }
- *               email: { type: string }
- */
-router.put("/users/:id", authMiddleware, UserController.update);
 
 /**
  * @swagger
@@ -127,6 +118,9 @@ router.put("/users/:id", authMiddleware, UserController.update);
  *         required: true
  *         schema:
  *           type: string
+ *     responses:
+ *       204:
+ *         description: Utilisateur supprimé
  */
 router.delete("/users/:id", authMiddleware, UserController.delete);
 

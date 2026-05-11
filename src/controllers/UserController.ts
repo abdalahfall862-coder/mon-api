@@ -9,11 +9,12 @@ export class UserController {
     static async register(req: Request, res: Response, next: NextFunction) {
         try {
             const { username, email, password } = req.body;
-            const newUser = await userService.register({username, email, password});
+            const newUser = await userService.register({ username, email, password });
             
+            // On retire le mot de passe de la réponse
             const { password: _, ...userResponse } = newUser;
             
-            res.status(201).json({
+            return res.status(201).json({
                 message: "Utilisateur créé avec succès",
                 user: userResponse
             });
@@ -22,16 +23,18 @@ export class UserController {
         }
     }
 
-    // 2. Connexion
+    // 2. Connexion (Le moteur de ton Token)
     static async login(req: Request, res: Response, next: NextFunction) {
         try {
             const { email, password } = req.body;
             const result = await userService.login(email, password);
             
-            res.status(200).json(result);
+            // On renvoie { token, user }
+            return res.status(200).json(result);
         } catch (error: any) {
+            // On gère les erreurs d'auth explicitement pour Swagger
             if (error.message === "Utilisateur non trouvé" || error.message === "Mot de passe incorrect") {
-                return res.status(401).json({ message: error.message });
+                return res.status(401).json({ message: "Identifiants invalides" });
             }
             next(error);
         }
@@ -47,29 +50,50 @@ export class UserController {
                 return userWithoutPassword;
             });
 
-            res.status(200).json(usersSafe);
+            return res.status(200).json(usersSafe);
         } catch (error: any) {
             next(error); 
         }
     }
 
-    // 4. Récupérer un utilisateur par ID (Nouveau)
+    // 4. Récupérer un utilisateur par ID
     static async getOne(req: Request, res: Response, next: NextFunction) {
         try {
-            const user = await userService.findOne(req.params.id as string);
+            const id  = req.params.id as string;
+
+            // Vérification du format de l'ID MongoDB (24 caractères)
+            if (!id || id.length !== 24) {
+                return res.status(400).json({ message: "Format d'ID invalide" });
+            }
+
+            const user = await userService.findOne(id);
+            if (!user) {
+                return res.status(404).json({ message: "Utilisateur non trouvé" });
+            }
+
             const { password, ...userSafe } = user;
-            res.status(200).json(userSafe);
+            return res.status(200).json(userSafe);
         } catch (error) {
             next(error);
         }
     }
 
-    // 5. Mettre à jour un utilisateur (Nouveau)
+    // 5. Mettre à jour un utilisateur
     static async update(req: Request, res: Response, next: NextFunction) {
         try {
-            const updatedUser = await userService.update(req.params.id as string, req.body);
+            const id = req.params.id as string;
+
+            if (!id || id.length !== 24) {
+                return res.status(400).json({ message: "ID invalide" });
+            }
+
+            const updatedUser = await userService.update(id, req.body);
+            if (!updatedUser) {
+                return res.status(404).json({ message: "Utilisateur introuvable" });
+            }
+
             const { password, ...userSafe } = updatedUser;
-            res.status(200).json({
+            return res.status(200).json({
                 message: "Utilisateur mis à jour",
                 user: userSafe
             });
@@ -78,11 +102,18 @@ export class UserController {
         }
     }
 
-    // 6. Supprimer un utilisateur (Nouveau)
+    // 6. Supprimer un utilisateur
     static async delete(req: Request, res: Response, next: NextFunction) {
         try {
-            await userService.delete(req.params.id as string);
-            res.status(204).send(); // 204 = Succès sans contenu à renvoyer
+            const id = req.params.id as string;
+
+            if (!id || id.length !== 24) {
+                return res.status(400).json({ message: "ID invalide" });
+            }
+
+            await userService.delete(id);
+            // 204 No Content : La suppression a réussi, on ne renvoie rien
+            return res.status(204).send(); 
         } catch (error) {
             next(error);
         }

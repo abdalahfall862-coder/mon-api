@@ -4,23 +4,29 @@ import swaggerUi from "swagger-ui-express";
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
+import cors from "cors"; // Importé en haut
 import { AppDataSource } from "./config/data-source.js";
 import userRoutes from "./routes/UserRoutes.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 dotenv.config();
 
-const app = express(); // 1. On crée l'application d'abord !
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 2. Configuration Swagger
+// --- 1. MIDDLEWARES GLOBAUX (L'ordre est important !) ---
+app.use(cors()); // Doit être en premier pour autoriser Swagger
+app.use(express.json()); 
+app.use(morgan("dev"));
+
+// --- 2. CONFIGURATION SWAGGER ---
 const swaggerOptions = {
     definition: {
         openapi: "3.0.0",
         info: {
-            title: "Dexchange API",
+            title: "Mohamed API",
             version: "1.0.0",
-            description: "Documentation de mon API de gestion d'utilisateurs et tâches",
+            description: "Documentation de mon API de gestion d'utilisateurs",
         },
         servers: [
             {
@@ -35,35 +41,48 @@ const swaggerOptions = {
                     bearerFormat: "JWT",
                 },
             },
+            schemas: {
+                CreateUserDto: {
+                    type: "object",
+                    required: ["username", "email", "password"],
+                    properties: {
+                        username: { type: "string", example: "Mohamed" },
+                        email: { type: "string", example: "test@gmail.com" },
+                        password: { type: "string", example: "Password123!" },
+                    },
+                },
+                LoginDto: {
+                    type: "object",
+                    required: ["email", "password"],
+                    properties: {
+                        email: { type: "string", example: "test@gmail.com" },
+                        password: { type: "string", example: "Password123!" },
+                    },
+                },
+            },
         },
     },
-    // Vérifie bien que ce chemin correspond à tes fichiers réels
-    apis: ["./src/routes/*.ts", "./src/entities/*.ts"], 
+    apis: ["./src/routes/*.{ts,js}", "./src/entities/*.{ts,js}", "./src/dtos/*.{ts,js}"], 
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
-// 3. Middlewares globaux
-app.use(express.json()); 
-app.use(morgan("dev"));
-
-// 4. Routes de la documentation
+// --- 3. ROUTES ---
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-// 5. Routes de l'API
 app.use("/api", userRoutes);
 
-// 6. Middleware d'erreur (toujours en dernier)
+// --- 4. MIDDLEWARE D'ERREUR (Toujours en dernier) ---
 app.use(errorMiddleware); 
 
-// 7. Démarrage
+// --- 5. DÉMARRAGE DU SERVEUR ---
 async function start() {
     try {
         await AppDataSource.initialize();
         console.log("📦 MongoDB est connecté !");
 
         if (!process.env.JWT_SECRET) {
-            console.log("⚠️ ATTENTION : JWT_SECRET n'est pas chargé.");
+            console.error("❌ ERREUR : JWT_SECRET n'est pas défini dans le fichier .env !");
+            // Optionnel : process.exit(1); 
         }
 
         app.listen(PORT, () => {
