@@ -1,6 +1,5 @@
 import { DataSource } from "typeorm";
-// Remplace 'User.js' par 'user.js' si ton fichier est en minuscules
-import { User } from "../entities/User.js"; 
+import { User } from "../entities/User.js";
 import dotenv from "dotenv";
 
 dotenv.config();
