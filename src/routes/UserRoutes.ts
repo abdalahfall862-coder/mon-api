@@ -101,8 +101,42 @@ router.get("/users", authMiddleware, UserController.getAll);
  *       404:
  *         description: Utilisateur non trouvé
  */
-// AJOUT ICI : La ligne qui manquait pour lier l'ID au contrôleur
 router.get("/users/:id", authMiddleware, UserController.getOne);
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   put:
+ *     summary: Mettre à jour un utilisateur
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Utilisateur mis à jour
+ *       404:
+ *         description: Utilisateur non trouvé
+ */
+router.put("/users/:id", authMiddleware, UserController.update);
 
 /**
  * @swagger
