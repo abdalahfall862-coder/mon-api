@@ -11,7 +11,6 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     // On récupère le token
     const token = authHeader.split(" ")[1];
     
-    // SOLUTION : On vérifie explicitement que le token n'est pas undefined ou vide
     if (!token) {
         return res.status(401).json({ message: "Format de token invalide." });
     }
@@ -24,7 +23,6 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     }
 
     try {
-        // Grâce au "if (!token)" au-dessus, TS sait que 'token' est une string ici
         const decoded = jwt.verify(token, secret);
         
         (req as any).user = decoded; 

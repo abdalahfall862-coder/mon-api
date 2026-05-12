@@ -15,7 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // --- 1. MIDDLEWARES GLOBAUX (L'ordre est important !) ---
-app.use(cors()); // Doit être en premier pour autoriser Swagger
+app.use(cors()); 
 app.use(express.json()); 
 app.use(morgan("dev"));
 

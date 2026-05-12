@@ -43,12 +43,12 @@ export class UserService {
         return { token, user };
     }
 
-    // 3. Récupérer tous
+    // 3. Récupérer tous les utilisateurs
     async findAll() {
         return await this.userRepository.find();
     }
 
-    // 4. Récupérer UN utilisateur (C'est cette méthode qui manquait !)
+    // 4. Récupérer UN utilisateur par ID
     async findOne(id: string) {
         try {
             // On s'assure que l'ID est transformé en ObjectId pour MongoDB

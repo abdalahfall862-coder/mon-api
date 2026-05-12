@@ -5,13 +5,11 @@ const userService = new UserService();
 
 export class UserController {
     
-    // 1. Inscription
     static async register(req: Request, res: Response, next: NextFunction) {
         try {
             const { username, email, password } = req.body;
             const newUser = await userService.register({ username, email, password });
             
-            // On retire le mot de passe de la réponse
             const { password: _, ...userResponse } = newUser;
             
             return res.status(201).json({
@@ -23,16 +21,13 @@ export class UserController {
         }
     }
 
-    // 2. Connexion (Le moteur de ton Token)
     static async login(req: Request, res: Response, next: NextFunction) {
         try {
             const { email, password } = req.body;
             const result = await userService.login(email, password);
             
-            // On renvoie { token, user }
             return res.status(200).json(result);
         } catch (error: any) {
-            // On gère les erreurs d'auth explicitement pour Swagger
             if (error.message === "Utilisateur non trouvé" || error.message === "Mot de passe incorrect") {
                 return res.status(401).json({ message: "Identifiants invalides" });
             }
