@@ -5,6 +5,7 @@ const userService = new UserService();
 
 export class UserController {
     
+    // 1. Inscription
     static async register(req: Request, res: Response, next: NextFunction) {
         try {
             const { username, email, password } = req.body;
@@ -16,11 +17,15 @@ export class UserController {
                 message: "Utilisateur créé avec succès",
                 user: userResponse
             });
-        } catch (error) {
+        } catch (error: any) {
+            if (error.message === "Champs obligatoires manquants") {
+                return res.status(400).json({ message: error.message });
+            }
             next(error);
         }
     }
 
+    // 2. Connexion
     static async login(req: Request, res: Response, next: NextFunction) {
         try {
             const { email, password } = req.body;
@@ -54,21 +59,24 @@ export class UserController {
     // 4. Récupérer un utilisateur par ID
     static async getOne(req: Request, res: Response, next: NextFunction) {
         try {
-            const id  = req.params.id as string;
+            const id = req.params.id as string;
 
-            // Vérification du format de l'ID MongoDB (24 caractères)
             if (!id || id.length !== 24) {
                 return res.status(400).json({ message: "Format d'ID invalide" });
             }
 
             const user = await userService.findOne(id);
+            // findOne renvoyant null si non trouvé, on déclenche proprement la 404 ici
             if (!user) {
                 return res.status(404).json({ message: "Utilisateur non trouvé" });
             }
 
             const { password, ...userSafe } = user;
             return res.status(200).json(userSafe);
-        } catch (error) {
+        } catch (error: any) {
+            if (error.message === "Format d'ID invalide") {
+                return res.status(400).json({ message: error.message });
+            }
             next(error);
         }
     }
@@ -92,7 +100,11 @@ export class UserController {
                 message: "Utilisateur mis à jour",
                 user: userSafe
             });
-        } catch (error) {
+        } catch (error: any) {
+            // Si la sous-méthode findOne(id) appelée par update lève une erreur de format d'ID
+            if (error.message === "Format d'ID invalide") {
+                return res.status(400).json({ message: error.message });
+            }
             next(error);
         }
     }
@@ -107,9 +119,12 @@ export class UserController {
             }
 
             await userService.delete(id);
-            // 204 No Content : La suppression a réussi, on ne renvoie rien
             return res.status(204).send(); 
-        } catch (error) {
+        } catch (error: any) {
+            // Intercepte le throw Error("Utilisateur non trouvé") du UserService.delete()
+            if (error.message === "Utilisateur non trouvé") {
+                return res.status(404).json({ message: "Utilisateur introuvable" });
+            }
             next(error);
         }
     }
