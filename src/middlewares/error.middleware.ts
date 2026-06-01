@@ -14,7 +14,6 @@ export const errorMiddleware = (
     res.status(status).json({
         status,
         message,
-        // On n'affiche la pile d'erreur (stack) qu'en développement pour la sécurité
         stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
 };

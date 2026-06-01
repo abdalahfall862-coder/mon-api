@@ -6,7 +6,7 @@ import { ObjectId } from "mongodb";
 
 export class UserService {
     private userRepository = AppDataSource.getMongoRepository(User);
-
+    
     // 1. Inscription
     async register(userData: Partial<User>) {
         const { password, email, username } = userData;

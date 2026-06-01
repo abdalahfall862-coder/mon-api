@@ -4,7 +4,7 @@ import swaggerUi from "swagger-ui-express";
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
-import cors from "cors"; // Importé en haut
+import cors from "cors"; 
 import { AppDataSource } from "./config/data-source.js";
 import userRoutes from "./routes/UserRoutes.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
@@ -14,7 +14,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- 1. MIDDLEWARES GLOBAUX (L'ordre est important !) ---
+// On récupère dynamiquement l'URL externe fournie par Render, ou on se rabat sur localhost
+const SERVER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+
 app.use(cors()); 
 app.use(express.json()); 
 app.use(morgan("dev"));
@@ -28,9 +30,11 @@ const swaggerOptions = {
             version: "1.0.0",
             description: "Documentation de mon API de gestion d'utilisateurs",
         },
+        // Synchronisation dynamique de l'URL du serveur pour éviter les crashs CORS en ligne
         servers: [
             {
-                url: `http://localhost:${PORT}`,
+                url: SERVER_URL,
+                description: process.env.RENDER_EXTERNAL_URL ? "Serveur de Production (Render)" : "Serveur Local",
             },
         ],
         components: {
@@ -81,13 +85,12 @@ async function start() {
         console.log("📦 MongoDB est connecté !");
 
         if (!process.env.JWT_SECRET) {
-            console.error("❌ ERREUR : JWT_SECRET n'est pas défini dans le fichier .env !");
-            // Optionnel : process.exit(1); 
+            console.error("❌ ERREUR : JWT_SECRET n'est pas défini !");
         }
 
         app.listen(PORT, () => {
-            console.log(`🚀 Serveur actif sur : http://localhost:${PORT}`);
-            console.log(`📑 Documentation disponible sur : http://localhost:${PORT}/api-docs`);
+            console.log(`🚀 Serveur actif sur : ${SERVER_URL}`);
+            console.log(`📑 Documentation disponible sur : ${SERVER_URL}/api-docs`);
         });
     } catch (error) {
         console.error("❌ Échec du démarrage :", error);
