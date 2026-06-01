@@ -12,9 +12,8 @@ import { errorMiddleware } from "./middlewares/error.middleware.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
-// On récupère dynamiquement l'URL externe fournie par Render, ou on se rabat sur localhost
 const SERVER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
 
 app.use(cors()); 
@@ -30,7 +29,6 @@ const swaggerOptions = {
             version: "1.0.0",
             description: "Documentation de mon API de gestion d'utilisateurs",
         },
-        // Synchronisation dynamique de l'URL du serveur pour éviter les crashs CORS en ligne
         servers: [
             {
                 url: SERVER_URL,
@@ -81,20 +79,28 @@ app.use(errorMiddleware);
 // --- 5. DÉMARRAGE DU SERVEUR ---
 async function start() {
     try {
+        console.log("🔄 Tentative de connexion à MongoDB...");
         await AppDataSource.initialize();
-        console.log("📦 MongoDB est connecté !");
+        console.log("📦 MongoDB est connecté avec succès !");
 
         if (!process.env.JWT_SECRET) {
-            console.error("❌ ERREUR : JWT_SECRET n'est pas défini !");
+            console.warn("⚠️ ATTENTION : JWT_SECRET n'est pas défini dans l'environnement !");
         }
 
-        app.listen(PORT, () => {
+        app.listen(PORT, '0.0.0.0', () => {
             console.log(`🚀 Serveur actif sur : ${SERVER_URL}`);
             console.log(`📑 Documentation disponible sur : ${SERVER_URL}/api-docs`);
         });
     } catch (error) {
-        console.error("❌ Échec du démarrage :", error);
+        console.error("❌ ÉCHEC CRITIQUE DU DÉMARRAGE :", error);
+        process.exit(1); // Force le processus à s'arrêter proprement pour que Render affiche le log
     }
 }
+
+// Capture des erreurs globales hors du flux asynchrone principal
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("❌ Promesse non gérée rejetée :", reason);
+    process.exit(1);
+});
 
 start();
