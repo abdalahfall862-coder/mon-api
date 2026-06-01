@@ -5,8 +5,7 @@ export const errorMiddleware = (
     req: Request, 
     res: Response, 
     next: NextFunction
-) => {
-    // Si l'erreur a un code de statut spécifique, on l'utilise, sinon 500
+) => {    
     const status = err.status || 500;
     const message = err.message || "Une erreur interne est survenue sur le serveur";
 
