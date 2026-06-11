@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { UserService } from "../services/UserService.js";
+import { UserService } from "../services/UserService";
 
 const userService = new UserService();
 
@@ -8,17 +8,22 @@ export class UserController {
     // 1. Inscription
     static async register(req: Request, res: Response, next: NextFunction) {
         try {
-            const { username, email, password } = req.body;
-            const newUser = await userService.register({ username, email, password });
+            const { name, email, password } = req.body;
             
-            const { password: _, ...userResponse } = newUser;
+            if (!name || !email || !password) {
+                return res.status(400).json({ message: "Champs obligatoires manquants" });
+            }
+
+            const newUser = await userService.register({ name, email, password });
+            
+            const { password: _, ...userResponse } = newUser as any;  // ← as any
             
             return res.status(201).json({
                 message: "Utilisateur créé avec succès",
                 user: userResponse
             });
         } catch (error: any) {
-            if (error.message === "Champs obligatoires manquants") {
+            if (error.message === "Champs obligatoires manquants" || error.message === "Email déjà utilisé") {
                 return res.status(400).json({ message: error.message });
             }
             next(error);
@@ -45,7 +50,8 @@ export class UserController {
         try {
             const users = await userService.findAll();
             
-            const usersSafe = users.map(user => {
+            // ← CORRIGÉ : users est un tableau, on map dessus
+            const usersSafe = users.map((user: any) => {
                 const { password, ...userWithoutPassword } = user;
                 return userWithoutPassword;
             });
@@ -61,22 +67,18 @@ export class UserController {
         try {
             const id = req.params.id as string;
 
-            if (!id || id.length !== 24) {
-                return res.status(400).json({ message: "Format d'ID invalide" });
+            if (!id) {
+                return res.status(400).json({ message: "ID requis" });
             }
 
             const user = await userService.findOne(id);
-            // findOne renvoyant null si non trouvé, on déclenche proprement la 404 ici
             if (!user) {
                 return res.status(404).json({ message: "Utilisateur non trouvé" });
             }
 
-            const { password, ...userSafe } = user;
+            const { password, ...userSafe } = user as any;  // ← as any
             return res.status(200).json(userSafe);
         } catch (error: any) {
-            if (error.message === "Format d'ID invalide") {
-                return res.status(400).json({ message: error.message });
-            }
             next(error);
         }
     }
@@ -86,8 +88,8 @@ export class UserController {
         try {
             const id = req.params.id as string;
 
-            if (!id || id.length !== 24) {
-                return res.status(400).json({ message: "ID invalide" });
+            if (!id) {
+                return res.status(400).json({ message: "ID requis" });
             }
 
             const updatedUser = await userService.update(id, req.body);
@@ -95,16 +97,12 @@ export class UserController {
                 return res.status(404).json({ message: "Utilisateur introuvable" });
             }
 
-            const { password, ...userSafe } = updatedUser;
+            const { password, ...userSafe } = updatedUser as any;  // ← as any
             return res.status(200).json({
                 message: "Utilisateur mis à jour",
                 user: userSafe
             });
         } catch (error: any) {
-            // Si la sous-méthode findOne(id) appelée par update lève une erreur de format d'ID
-            if (error.message === "Format d'ID invalide") {
-                return res.status(400).json({ message: error.message });
-            }
             next(error);
         }
     }
@@ -114,14 +112,13 @@ export class UserController {
         try {
             const id = req.params.id as string;
 
-            if (!id || id.length !== 24) {
-                return res.status(400).json({ message: "ID invalide" });
+            if (!id) {
+                return res.status(400).json({ message: "ID requis" });
             }
 
             await userService.delete(id);
             return res.status(204).send(); 
         } catch (error: any) {
-            // Intercepte le throw Error("Utilisateur non trouvé") du UserService.delete()
             if (error.message === "Utilisateur non trouvé") {
                 return res.status(404).json({ message: "Utilisateur introuvable" });
             }
