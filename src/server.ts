@@ -38,7 +38,12 @@ import { createFavoriteRoutes } from './routes/favoriteRoutes';
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors(app.use(cors({
+  origin: ['http://localhost:3001', 'http://localhost:61721', 'http://127.0.0.1:61721'],
+  credentials: true
+}));
+
+app.use(express.json());));
 app.use(express.json());
 
 // Connexion DB
@@ -97,7 +102,7 @@ AppDataSource.initialize()
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
-      console.log(`🚀 ShopMate API démarrée sur http://localhost:${PORT}`);
+      console.log(`🚀 MethShop API démarrée sur http://localhost:${PORT}`);
     });
 
   })
