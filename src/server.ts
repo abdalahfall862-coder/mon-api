@@ -38,12 +38,13 @@ import { createFavoriteRoutes } from './routes/favoriteRoutes';
 dotenv.config();
 
 const app = express();
-app.use(cors(app.use(cors({
+
+// CORS pour autoriser le frontend
+app.use(cors({
   origin: ['http://localhost:3001', 'http://localhost:61721', 'http://127.0.0.1:61721'],
   credentials: true
 }));
 
-app.use(express.json());));
 app.use(express.json());
 
 // Connexion DB
@@ -51,8 +52,6 @@ AppDataSource.initialize()
   .then((dataSource: any) => {
     console.log('✅ Base de données connectée');
 
-    // ========== DEPENDENCY INJECTION ==========
-    
     // Repositories
     const productRepo = new ProductRepository(dataSource);
     const categoryRepo = new CategoryRepository(dataSource);
