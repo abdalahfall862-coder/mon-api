@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { UserController } from "../controllers/UserController.js";
-import { authMiddleware } from "../middleware/admin.js"; 
-import { validationMiddleware } from "../middleware/validationMiddleware.js";
-import { CreateUserDto } from "../dto/CreateUser.dto.js"; 
+import { UserController } from "../controllers/UserController";
+import { adminMiddleware } from "../middleware/admin";
+import { validationMiddleware } from "../middleware/validationMiddleware";
+import { CreateUserDto } from "../dto/CreateUser.dto";
 
 const router = Router();
 
@@ -77,7 +77,7 @@ router.post("/login", UserController.login);
  *       200:
  *         description: Liste des utilisateurs
  */
-router.get("/users", authMiddleware, UserController.getAll);
+router.get("/users", adminMiddleware, UserController.getAll);
 
 /**
  * @swagger
@@ -101,7 +101,7 @@ router.get("/users", authMiddleware, UserController.getAll);
  *       404:
  *         description: Utilisateur non trouvé
  */
-router.get("/users/:id", authMiddleware, UserController.getOne);
+router.get("/users/:id", adminMiddleware, UserController.getOne);
 
 /**
  * @swagger
@@ -136,7 +136,7 @@ router.get("/users/:id", authMiddleware, UserController.getOne);
  *       404:
  *         description: Utilisateur non trouvé
  */
-router.put("/users/:id", authMiddleware, UserController.update);
+router.put("/users/:id", adminMiddleware, UserController.update);
 
 /**
  * @swagger
@@ -156,6 +156,6 @@ router.put("/users/:id", authMiddleware, UserController.update);
  *       204:
  *         description: Utilisateur supprimé
  */
-router.delete("/users/:id", authMiddleware, UserController.delete);
+router.delete("/users/:id", adminMiddleware, UserController.delete);
 
 export default router;

@@ -1,15 +1,15 @@
 import { AppDataSource } from "../config/database";
 import { User, UserRole } from "../entities/User";
-import bcrypt from "bcrypt"; 
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 export class UserService {
     private userRepository = AppDataSource.getMongoRepository(User);
-    
+
     // 1. Inscription
     async register(userData: { name: string; email: string; password: string; role?: string }) {
         const { password, email, name, role } = userData;
-        
+
         if (!password || !email || !name) {
             throw new Error("Champs obligatoires manquants");
         }
@@ -42,8 +42,8 @@ export class UserService {
         if (!isMatch) throw new Error("Mot de passe incorrect");
 
         const token = jwt.sign(
-            { id: user.id.toString(), email: user.email, role: user.role }, 
-            process.env.JWT_SECRET || "ma_cle_secrete_de_secours", 
+            { id: user.id.toString(), email: user.email, role: user.role },
+            process.env.JWT_SECRET || "ma_cle_secrete_de_secours",
             { expiresIn: '24h' }
         );
 

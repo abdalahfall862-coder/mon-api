@@ -1,3 +1,4 @@
+import UserRoutes from './routes/UserRoutes';
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
@@ -82,6 +83,7 @@ AppDataSource.initialize()
     app.use('/api/orders', createOrderRoutes(orderController));
     app.use('/api/admin', createAdminRoutes(adminController));
     app.use('/api/favorites', createFavoriteRoutes(favoriteController));
+    app.use('/api', UserRoutes);
 
     // Health check
     app.get('/health', (req, res) => {
