@@ -12,8 +12,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node10",
-    "ignoreDeprecations": "6.0",
+    "moduleResolution": "bundler",
     "strictPropertyInitialization": false,
     "sourceMap": true
   },
