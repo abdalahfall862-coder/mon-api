@@ -42,7 +42,7 @@ const app = express();
 
 // CORS pour autoriser le frontend
 app.use(cors({
-  origin: ['http://localhost:3001', 'http://localhost:61721', 'http://127.0.0.1:61721'],
+  origin: ['http://localhost:3001', 'http://localhost:61721', 'http://127.0.0.1:61721','https://meth-shop.vercel.app'],
   credentials: true
 }));
 
