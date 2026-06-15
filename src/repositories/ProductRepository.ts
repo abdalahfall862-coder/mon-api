@@ -20,13 +20,14 @@ export class ProductRepository {
     const limit = options.limit || 10;
     const skip  = (page - 1) * limit;
 
-    // Récupérer tous les produits actifs
+    // Récupérer TOUS les produits sans filtre where
     let products = await this.repo.find({
-      where: { isActive: true },
       order: { createdAt: 'DESC' }
     });
 
-    // Filtres côté JS (plus fiable avec TypeORM+MongoDB)
+    // Filtrer isActive côté JS
+    products = products.filter(p => p.isActive !== false);
+
     if (options.categoryId) {
       products = products.filter(p => p.categoryId === options.categoryId);
     }
@@ -44,7 +45,7 @@ export class ProductRepository {
       );
     }
 
-    const total    = products.length;
+    const total     = products.length;
     const paginated = products.slice(skip, skip + limit);
 
     return { products: paginated, total, page, totalPages: Math.ceil(total / limit) };
