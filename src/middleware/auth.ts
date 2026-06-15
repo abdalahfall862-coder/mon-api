@@ -26,6 +26,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    console.log('decoded jwt:', decoded);
     req.user = {
       id: decoded.id,
       email: decoded.email,
