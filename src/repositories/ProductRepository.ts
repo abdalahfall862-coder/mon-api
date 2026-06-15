@@ -16,31 +16,38 @@ export class ProductRepository {
     page?: number;
     limit?: number;
   }) {
-    const query: any = { isActive: true };
+    const page  = options.page  || 1;
+    const limit = options.limit || 10;
+    const skip  = (page - 1) * limit;
 
-    if (options.categoryId) query.categoryId = options.categoryId;
-    if (options.minPrice || options.maxPrice) {
-      query.price = {};
-      if (options.minPrice) query.price.$gte = options.minPrice;
-      if (options.maxPrice) query.price.$lte = options.maxPrice;
+    // Récupérer tous les produits actifs
+    let products = await this.repo.find({
+      where: { isActive: true },
+      order: { createdAt: 'DESC' }
+    });
+
+    // Filtres côté JS (plus fiable avec TypeORM+MongoDB)
+    if (options.categoryId) {
+      products = products.filter(p => p.categoryId === options.categoryId);
+    }
+    if (options.minPrice) {
+      products = products.filter(p => Number(p.price) >= Number(options.minPrice));
+    }
+    if (options.maxPrice) {
+      products = products.filter(p => Number(p.price) <= Number(options.maxPrice));
     }
     if (options.search) {
-      query.$or = [
-        { name: { $regex: options.search, $options: 'i' } },
-        { description: { $regex: options.search, $options: 'i' } }
-      ];
+      const s = options.search.toLowerCase();
+      products = products.filter(p =>
+        p.name.toLowerCase().includes(s) ||
+        p.description?.toLowerCase().includes(s)
+      );
     }
 
-    const page = options.page || 1;
-    const limit = options.limit || 10;
-    const skip = (page - 1) * limit;
+    const total    = products.length;
+    const paginated = products.slice(skip, skip + limit);
 
-    const [products, total] = await Promise.all([
-      this.repo.find({ where: query, skip, take: limit, order: { createdAt: 'DESC' } }),
-      this.repo.count({ where: query })
-    ]);
-
-    return { products, total, page, totalPages: Math.ceil(total / limit) };
+    return { products: paginated, total, page, totalPages: Math.ceil(total / limit) };
   }
 
   async findById(id: any): Promise<Product | null> {
