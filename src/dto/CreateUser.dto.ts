@@ -2,7 +2,7 @@ import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class CreateUserDto {
     @IsString()
-    username!: string;
+    name!: string;
 
     @IsEmail({}, { message: "L'email n'est pas valide" })
     email!: string;
