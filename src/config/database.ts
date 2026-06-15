@@ -9,7 +9,7 @@ import { Favorite } from '../entities/Favorite';
 
 export const AppDataSource = new DataSource({
   type: 'mongodb',
-  url: process.env.MONGODB_URI || 'mongodb://localhost:27017/shopmate',
+  url: process.env.MONGO_URI || "mongodb://localhost:27017/mon-api",
   database: 'shopmate',
   synchronize: true,
   logging: false,
