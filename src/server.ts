@@ -100,7 +100,16 @@ AppDataSource.initialize()
     // Erreurs
     app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
       console.error('❌ Erreur:', err);
-      res.status(500).json({ error: 'Erreur serveur interne' });
+
+      // Message custom pour les erreurs de connexion DB
+      const msg = String(err?.message || 'Erreur serveur interne');
+      const isConnexion = /connexion|connect|ECONN|ENOTFOUND|MongoNetwork|MongoParse|MongoTimeout|failed to connect|timed out/i.test(msg);
+
+      res.status(500).json({
+        error: isConnexion
+          ? "Erreur de connexion à l'application. Vérifie ta connexion et réessaie."
+          : 'Erreur serveur interne'
+      });
     });
 
     const PORT = process.env.PORT || 3000;
