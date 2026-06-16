@@ -21,42 +21,28 @@ export class ProductRepository {
     const limit = options.limit || 10;
     const skip  = (page - 1) * limit;
 
-    let products = await this.repo.find({
-      order: { createdAt: 'DESC' }
-    });
-
+    let products = await this.repo.find({ order: { createdAt: 'DESC' } });
     products = products.filter(p => p.isActive !== false);
 
-    if (options.categoryId) {
-      products = products.filter(p => p.categoryId === options.categoryId);
-    }
-    if (options.minPrice) {
-      products = products.filter(p => Number(p.price) >= Number(options.minPrice));
-    }
-    if (options.maxPrice) {
-      products = products.filter(p => Number(p.price) <= Number(options.maxPrice));
-    }
+    if (options.categoryId) products = products.filter(p => p.categoryId === options.categoryId);
+    if (options.minPrice)   products = products.filter(p => Number(p.price) >= Number(options.minPrice));
+    if (options.maxPrice)   products = products.filter(p => Number(p.price) <= Number(options.maxPrice));
     if (options.search) {
       const s = options.search.toLowerCase();
-      products = products.filter(p =>
-        p.name.toLowerCase().includes(s) ||
-        p.description?.toLowerCase().includes(s)
-      );
+      products = products.filter(p => p.name.toLowerCase().includes(s) || p.description?.toLowerCase().includes(s));
     }
 
     const total     = products.length;
     const paginated = products.slice(skip, skip + limit);
-
     return { products: paginated, total, page, totalPages: Math.ceil(total / limit) };
   }
 
   async findById(id: any): Promise<Product | null> {
     try {
-      // Essayer avec ObjectId
-      const objectId = typeof id === 'string' ? new ObjectId(id) : id;
-      return await this.repo.findOne({ where: { id: objectId } as any });
+      // Chercher par string id dans tous les produits
+      const all = await this.repo.find();
+      return all.find(p => p.id.toString() === id.toString()) || null;
     } catch {
-      // Si l'id n'est pas un ObjectId valide
       return null;
     }
   }
@@ -67,13 +53,17 @@ export class ProductRepository {
   }
 
   async update(id: any, data: Partial<Product>): Promise<Product | null> {
-    await this.repo.update(id, data);
-    return this.findById(id);
+    const product = await this.findById(id);
+    if (!product) return null;
+    Object.assign(product, data);
+    return this.repo.save(product);
   }
 
   async delete(id: any): Promise<boolean> {
-    const result = await this.repo.delete(id);
-    return result.affected !== 0;
+    const product = await this.findById(id);
+    if (!product) return false;
+    await this.repo.remove(product);
+    return true;
   }
 
   async decrementStock(id: any, quantity: number): Promise<boolean> {
