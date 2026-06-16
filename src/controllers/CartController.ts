@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CartService } from '../services/CartService';
+import { plainToInstance } from 'class-transformer';
 import { AddToCartDto } from '../dto/AddToCartDto';
 import { UpdateCartItemDto } from '../dto/UpdateCartItemDto';
 import { validate } from 'class-validator';
@@ -19,15 +20,14 @@ export class CartController {
 
   addToCart = async (req: Request, res: Response): Promise<void> => {
     try {
-      const dto = Object.assign(new AddToCartDto(), req.body);
+      const dto = plainToInstance(AddToCartDto, req.body);
       const errors = await validate(dto);
       if (errors.length > 0) {
         res.status(400).json({ errors: errors.map(e => e.constraints) });
         return;
       }
-
       const userId = (req as any).user.id.toString();
-      const cart = await this.cartService.addToCart(userId, dto.productId.toString(), dto.quantity);
+      const cart = await this.cartService.addToCart(userId, dto.productId.toString(), Number(dto.quantity));
       res.json(cart);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -36,16 +36,15 @@ export class CartController {
 
   updateQuantity = async (req: Request, res: Response): Promise<void> => {
     try {
-      const dto = Object.assign(new UpdateCartItemDto(), req.body);
+      const dto = plainToInstance(UpdateCartItemDto, req.body);
       const errors = await validate(dto);
       if (errors.length > 0) {
         res.status(400).json({ errors: errors.map(e => e.constraints) });
         return;
       }
-
       const userId = (req as any).user.id.toString();
-      const itemId = typeof req.params.itemId === 'string' ? req.params.itemId : req.params.itemId[0];  // ← CORRIGÉ
-      const cart = await this.cartService.updateQuantity(userId, itemId, dto.quantity);
+      const itemId = req.params.itemId;
+      const cart = await this.cartService.updateQuantity(userId, itemId, Number(dto.quantity));
       res.json(cart);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -55,7 +54,7 @@ export class CartController {
   removeFromCart = async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = (req as any).user.id.toString();
-      const itemId = typeof req.params.itemId === 'string' ? req.params.itemId : req.params.itemId[0];  // ← CORRIGÉ
+      const itemId = req.params.itemId;
       const cart = await this.cartService.removeFromCart(userId, itemId);
       res.json(cart);
     } catch (error: any) {
