@@ -39,7 +39,8 @@ export class UserController {
             return res.status(200).json(result);
         } catch (error: any) {
             if (error.message === "Utilisateur non trouvé" || error.message === "Mot de passe incorrect") {
-                return res.status(401).json({ message: "Identifiants invalides" });
+                return res.status(401).json({ error: "Email ou mot de passe incorrect." });
+
             }
             next(error);
         }
