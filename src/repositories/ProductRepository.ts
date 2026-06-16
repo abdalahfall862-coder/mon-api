@@ -1,5 +1,6 @@
 import { Repository, DataSource } from 'typeorm';
 import { Product } from '../entities/Product';
+import { ObjectId } from 'mongodb';
 
 export class ProductRepository {
   private repo: Repository<Product>;
@@ -20,12 +21,10 @@ export class ProductRepository {
     const limit = options.limit || 10;
     const skip  = (page - 1) * limit;
 
-    // Récupérer TOUS les produits sans filtre where
     let products = await this.repo.find({
       order: { createdAt: 'DESC' }
     });
 
-    // Filtrer isActive côté JS
     products = products.filter(p => p.isActive !== false);
 
     if (options.categoryId) {
@@ -52,7 +51,14 @@ export class ProductRepository {
   }
 
   async findById(id: any): Promise<Product | null> {
-    return this.repo.findOne({ where: { id } });
+    try {
+      // Essayer avec ObjectId
+      const objectId = typeof id === 'string' ? new ObjectId(id) : id;
+      return await this.repo.findOne({ where: { id: objectId } as any });
+    } catch {
+      // Si l'id n'est pas un ObjectId valide
+      return null;
+    }
   }
 
   async create(data: Partial<Product>): Promise<Product> {
