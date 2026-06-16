@@ -36,6 +36,11 @@ import { createOrderRoutes } from './routes/orderRoutes';
 import { createAdminRoutes } from './routes/adminRoutes';
 import { createFavoriteRoutes } from './routes/favoriteRoutes';
 
+import { ReviewRepository } from './repositories/ReviewRepository';
+import { ReviewService } from './services/ReviewService';
+import { ReviewController } from './controllers/ReviewController';
+import { createReviewRoutes } from './routes/reviewRoutes';
+
 dotenv.config();
 
 const app = express();
@@ -56,35 +61,39 @@ AppDataSource.initialize()
     console.log('✅ Base de données connectée');
 
     // Repositories
-    const productRepo = new ProductRepository(dataSource);
+    const productRepo  = new ProductRepository(dataSource);
     const categoryRepo = new CategoryRepository(dataSource);
-    const cartRepo = new CartRepository(dataSource);
-    const orderRepo = new OrderRepository(dataSource);
+    const cartRepo     = new CartRepository(dataSource);
+    const orderRepo    = new OrderRepository(dataSource);
     const favoriteRepo = new FavoriteRepository(dataSource);
+    const reviewRepo   = new ReviewRepository(dataSource); 
 
     // Services
-    const productService = new ProductService(productRepo);
+    const productService  = new ProductService(productRepo);
     const categoryService = new CategoryService(categoryRepo);
-    const cartService = new CartService(cartRepo, productRepo);
-    const orderService = new OrderService(orderRepo, cartRepo, productRepo, dataSource);
-    const adminService = new AdminService(orderRepo, dataSource);
+    const cartService     = new CartService(cartRepo, productRepo);
+    const orderService    = new OrderService(orderRepo, cartRepo, productRepo, dataSource);
+    const adminService    = new AdminService(orderRepo, dataSource);
     const favoriteService = new FavoriteService(favoriteRepo);
+    const reviewService   = new ReviewService(reviewRepo); 
 
     // Controllers
-    const productController = new ProductController(productService);
+    const productController  = new ProductController(productService);
     const categoryController = new CategoryController(categoryService);
-    const cartController = new CartController(cartService);
-    const orderController = new OrderController(orderService);
-    const adminController = new AdminController(adminService);
+    const cartController     = new CartController(cartService);
+    const orderController    = new OrderController(orderService);
+    const adminController    = new AdminController(adminService);
     const favoriteController = new FavoriteController(favoriteService);
+    const reviewController   = new ReviewController(reviewService); 
 
     // Routes
-    app.use('/api/products', createProductRoutes(productController));
+    app.use('/api/products',   createProductRoutes(productController));
     app.use('/api/categories', createCategoryRoutes(categoryController));
-    app.use('/api/cart', createCartRoutes(cartController));
-    app.use('/api/orders', createOrderRoutes(orderController));
-    app.use('/api/admin', createAdminRoutes(adminController));
-    app.use('/api/favorites', createFavoriteRoutes(favoriteController));
+    app.use('/api/cart',       createCartRoutes(cartController));
+    app.use('/api/orders',     createOrderRoutes(orderController));
+    app.use('/api/admin',      createAdminRoutes(adminController));
+    app.use('/api/favorites',  createFavoriteRoutes(favoriteController));
+    app.use('/api/reviews',    createReviewRoutes(reviewController));  
     app.use('/api', UserRoutes);
 
     // Health check
