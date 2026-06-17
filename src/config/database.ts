@@ -6,6 +6,7 @@ import { Cart } from '../entities/Cart';
 import { Order } from '../entities/Order';
 import { Delivery } from '../entities/Delivery';
 import { Favorite } from '../entities/Favorite';
+import { Review } from '../entities/Review';          // ← AJOUTER
 
 export const AppDataSource = new DataSource({
   type: 'mongodb',
@@ -13,5 +14,5 @@ export const AppDataSource = new DataSource({
   database: 'shopmate',
   synchronize: true,
   logging: false,
-  entities: [User, Product, Category, Cart, Order, Delivery, Favorite],
+  entities: [User, Product, Category, Cart, Order, Delivery, Favorite, Review], // ← AJOUTER Review
 });
