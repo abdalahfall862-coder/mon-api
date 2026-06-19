@@ -2,34 +2,35 @@ import { IsString, IsObject, ValidateNested, IsOptional } from 'class-validator'
 import { Type } from 'class-transformer';
 
 class AddressDto {
-  @IsString()
-  street: string;
+    @IsString()
+    street: string;
 
-  @IsString()
-  city: string;
+    @IsString()
+    city: string;
 
-  @IsString()
-  zipCode: string;
+    @IsOptional()
+    @IsString()
+    zipCode?: string;
 
-  @IsString()
-  country: string;
+    @IsOptional()
+    @IsString()
+    country?: string;
 }
 
 export class CreateOrderDto {
-  @ValidateNested()
-  @Type(() => AddressDto)
-  shippingAddress: AddressDto;
+    @ValidateNested()
+    @Type(() => AddressDto)
+    shippingAddress: AddressDto;
 
-  @IsOptional()
-  @IsString()
-  paymentMethod?: string;
+    @IsOptional()
+    @IsString()
+    paymentMethod?: string;
 
-  @IsOptional()
-  @IsString()
-  deliveryType?: string;
+    @IsOptional()
+    @IsString()
+    deliveryType?: string;
 
-  @IsOptional()
-  @IsString()
-  phone?: string;
-
+    @IsOptional()
+    @IsString()
+    phone?: string;
 }
