@@ -56,7 +56,9 @@ export class AdminService {
 
   // ── Commandes ──────────────────────────────────
   async getOrders() {
-    return this.orderRepo.findAll();
+    return this.dataSource.getRepository('Order').find({ 
+        order: { createdAt: 'DESC' } 
+    });
   }
 
   async updateOrderStatus(id: string, status: string) {

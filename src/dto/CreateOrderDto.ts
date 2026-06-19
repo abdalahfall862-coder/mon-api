@@ -27,4 +27,9 @@ export class CreateOrderDto {
   @IsOptional()
   @IsString()
   deliveryType?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
 }

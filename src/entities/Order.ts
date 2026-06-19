@@ -66,4 +66,8 @@ export class Order {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ nullable: true })
+  phone: string;
+  
 }
