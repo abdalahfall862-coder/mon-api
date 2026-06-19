@@ -82,7 +82,12 @@ export class OrderService {
       userId,
       items: orderItems,
       total,
-      shippingAddress: dto.shippingAddress,
+      shippingAddress: {
+        street: dto.shippingAddress.street,
+        city: dto.shippingAddress.city,
+        zipCode: dto.shippingAddress.zipCode ?? '',
+        country: dto.shippingAddress.country ?? '',
+      },
       paymentMethod: dto.paymentMethod || 'card',
       status: OrderStatus.PENDING,
       paymentStatus: PaymentStatus.PENDING,
