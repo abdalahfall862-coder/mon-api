@@ -35,11 +35,9 @@ export class OrderRepository {
   }
 
   async getTotalRevenue(): Promise<number> {
-    const result = await this.repo
-      .createQueryBuilder('order')
-      .select('SUM(order.total)', 'total')
-      .where('order.status != :cancelled', { cancelled: 'cancelled' })
-      .getRawOne();
-    return Number(result?.total) || 0;
+    const orders = await this.repo.find();
+    return orders
+      .filter(o => o.status !== 'cancelled')
+      .reduce((sum, o) => sum + Number(o.total), 0);
   }
 }
