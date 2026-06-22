@@ -20,7 +20,7 @@ export class AdminService {
 
   // ── Produits ───────────────────────────────────
   async getProducts() {
-    return this.dataSource.getRepository('Product').find({ order: { createdAt: 'DESC' } });
+    return this.dataSource.getRepository('Product').find();
   }
 
   async createProduct(data: any) {
@@ -56,9 +56,24 @@ export class AdminService {
 
   // ── Commandes ──────────────────────────────────
   async getOrders() {
-    return this.dataSource.getRepository('Order').find({ 
-        order: { createdAt: 'DESC' } 
-    });
+    const orders   = await this.dataSource.getRepository('Order').find();
+    const userRepo = this.dataSource.getRepository('User');
+
+    // ✅ Enrichir chaque commande avec le nom du client
+    const enriched = await Promise.all(
+      orders.map(async (o: any) => {
+        const user = await userRepo.findOne({ where: { id: o.userId } });
+        return {
+          ...o,
+          user: user ? { name: (user as any).name, email: (user as any).email } : null
+        };
+      })
+    );
+
+    // Trier par date décroissante
+    return enriched.sort((a: any, b: any) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }
 
   async updateOrderStatus(id: string, status: string) {
@@ -70,8 +85,11 @@ export class AdminService {
   // ── Utilisateurs ───────────────────────────────
   async getUsers() {
     const repo  = this.dataSource.getRepository('User');
-    const users = await repo.find({ order: { createdAt: 'DESC' } });
-    return users.map(({ password, ...u }: any) => u);
+    const users = await repo.find();
+    // Trier par date décroissante et supprimer le mot de passe
+    return users
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .map(({ password, ...u }: any) => u);
   }
 
   async deleteUser(id: string) {
