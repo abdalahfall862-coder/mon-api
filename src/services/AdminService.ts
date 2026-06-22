@@ -56,25 +56,30 @@ export class AdminService {
 
   // ── Commandes ──────────────────────────────────
   async getOrders() {
-    const orders   = await this.dataSource.getRepository('Order').find();
-    const userRepo = this.dataSource.getRepository('User');
+  const orders   = await this.dataSource.getRepository('Order').find();
+  const userRepo = this.dataSource.getRepository('User');
 
-    // ✅ Enrichir chaque commande avec le nom du client
-    const enriched = await Promise.all(
-      orders.map(async (o: any) => {
-        const user = await userRepo.findOne({ where: { id: o.userId } });
+  const enriched = await Promise.all(
+    orders.map(async (o: any) => {
+      try {
+        const { ObjectId } = require('mongodb');
+        const user = await userRepo.findOne({ 
+          where: { _id: new ObjectId(o.userId) } 
+        });
         return {
           ...o,
           user: user ? { name: (user as any).name, email: (user as any).email } : null
         };
-      })
-    );
+      } catch {
+        return { ...o, user: null };
+      }
+    })
+  );
 
-    // Trier par date décroissante
-    return enriched.sort((a: any, b: any) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  }
+  return enriched.sort((a: any, b: any) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+}
 
   async updateOrderStatus(id: string, status: string) {
     const repo = this.dataSource.getRepository('Order');
