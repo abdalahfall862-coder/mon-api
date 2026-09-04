@@ -41,6 +41,11 @@ export class AdminController {
     catch (e: any) { res.status(400).json({ error: e.message }); }
   };
 
+   updateCategory = async (req: Request, res: Response) => {
+    try { res.json(await this.adminService.updateCategory(req.params.id, req.body)); }
+    catch (e: any) { res.status(400).json({ error: e.message }); }
+  };
+
   deleteCategory = async (req: Request, res: Response) => {
     try { await this.adminService.deleteCategory(req.params.id); res.status(204).send(); }
     catch (e: any) { res.status(400).json({ error: e.message }); }

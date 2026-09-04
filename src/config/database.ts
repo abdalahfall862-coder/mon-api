@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { DataSource } from 'typeorm';
 import { User } from '../entities/User';
 import { Product } from '../entities/Product';

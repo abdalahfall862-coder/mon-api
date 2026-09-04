@@ -50,6 +50,12 @@ export class AdminService {
     return repo.save(category);
   }
 
+  async updateCategory(id: string, data: any) {
+    const repo = this.dataSource.getRepository('Category');
+    await repo.update(id, data);
+    return repo.findOne({ where: { id } });
+  }
+
   async deleteCategory(id: string) {
     return this.dataSource.getRepository('Category').delete(id);
   }

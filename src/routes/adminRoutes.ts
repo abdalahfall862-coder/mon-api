@@ -21,7 +21,8 @@ export const createAdminRoutes = (controller: AdminController): Router => {
   router.get('/categories', ...auth, controller.getCategories);
   router.post('/categories', ...auth, controller.createCategory);
   router.delete('/categories/:id', ...auth, controller.deleteCategory);
-
+  router.put('/categories/:id', ...auth, controller.updateCategory);
+  
   // Commandes
   router.get('/orders', ...auth, controller.getOrders);
   router.put('/orders/:id/status', ...auth, controller.updateOrderStatus);
